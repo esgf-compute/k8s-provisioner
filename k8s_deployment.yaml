@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nimbus-k8s-provisioner
+  labels:
+    app: nimbus-k8s-provisioner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nimbus-k8s-provisioner
+  template:
+    metadata:
+      labels:
+        app: nimbus-k8s-provisioner
+    spec:
+      nodeSelector:
+        tier: backend
+      containers:
+      - name: nimbus-k8s-provisioner
+        image: jasonb87/nimbus-provisioner:latest
+        envFrom:
+        - configMapRef:
+            name: nimbus-k8s-provisioner-config
+        - secretRef:
+            name: nimbus-k8s-provisioner-secret
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - mountPath: /p/cscratch/nimbus
+          name: jupyterhub-users
+      volumes:
+      - name: jupyterhub-users
+        persistentVolumeClaim:
+          claimName: jupyterhub-users
+      - name: nimbus-k8s-provisioner-secret
+        secret:
+          secretName: nimbus-k8s-provisioner-secret
+      - name: nimbus-k8s-provisioner-config
+        configMap:
+          name: nimbus-k8s-provisioner-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nimbus-k8s-provisioner-config
+data:
+  git-organization: ""
+  external-host: ""
+  callback-path: ""
+  namespace: ""
+  path: ""
+  storage-size: ""
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nimbus-k8s-provisioner-secret
+type: Opaque
+data:
+  git-username: ""
+  git-password: "" 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nimbus-k8s-provisioner
+spec:
+  selector:
+    app: nimbus-k8s-provisioner
+  ports:
+  - protocol: TCP
+    port: 8000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nimbus-k8s-provisioner
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: nimbus-k8s-provisioner
+          servicePort: 8000
+        path: /github/webhook
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: nimbus-provisioner
+--- 
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: nimbus-provisioner
+rules:
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["create",]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: nimbus-provisioner
+subjects:
+- kind: ServiceAccount
+  name: nimbus-provisioner
+roleRef:
+  kind: Role
+  name: nimbus-provisioner
+apiGroup: rbac.authorization.k8s.io

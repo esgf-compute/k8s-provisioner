@@ -1,0 +1,32 @@
+package:
+  name: nimbus-k8s-provisioner
+  version: 1.0.0
+
+source:
+  path: ./
+
+build:
+  number: {{ environ.get('BUILD_NUMBER', 0) }}
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
+  noarch: python
+
+tests:
+  imports:
+    - provisioner
+
+requirements:
+  build:
+    - git
+
+  host:
+    - python
+
+  run:
+    - python
+    - python-kubernetes
+    - pygithub
+    - pyramid
+
+about:
+  home: https://github.com/esgf-nimbus/k8s-provisioner
+  summary: Dynamically provisions k8s PersistentVolume on Github Organization join.
