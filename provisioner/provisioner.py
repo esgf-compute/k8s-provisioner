@@ -28,6 +28,10 @@ STORAGE_SIZE = os.environ['STORAGE_SIZE']
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
 INCLUSTER = bool(os.environ.get('INCLUSTER', False))
 
+PERMISSION = int(os.environ.get('PERMISSION', 0o755))
+OWN_UID = int(os.environ.get('OWN_UID', 1000))
+OWN_GID = int(os.environ.get('OWN_GID', 1000))
+
 if INCLUSTER:
     config.load_incluster_config()
 else:
@@ -68,7 +72,7 @@ def create_pv(username, namespace, path, storage_size):
 
     pv = client.V1PersistentVolume('v1', 'PersistentVolume', metadata, spec)
 
-    return pv
+    return pv, path
 
 def handle_k8s_provisions():
     logging.info('Handling provision requests')
@@ -80,7 +84,7 @@ def handle_k8s_provisions():
 
         logging.info('Processing request for user %r', login)
 
-        pv = create_pv(login, NAMESPACE, BASE_PATH, STORAGE_SIZE)
+        pv, path = create_pv(login, NAMESPACE, BASE_PATH, STORAGE_SIZE)
 
         try:
             core.create_persistent_volume(body=pv)
@@ -92,6 +96,29 @@ def handle_k8s_provisions():
             pass
         else:
             logging.info('Successfully created PersistentVolume for %s', login)
+
+            # We make the directory since k8s doesn't create the directory until the
+            # claim is make
+            try:
+                os.makedirs(path, PERMISSION, True)
+            except OSError as e:
+                logging.info('Error creating directory %r', path)
+            else:
+                try:
+                    # Fix ownership
+                    os.chown(path, OWN_UID, OWN_GID)
+                except OSError as e:
+                    logging.info('Error chown on %r', path)
+
+                try:
+                    for root, dirs, files in os.walk(path):
+                        for d in dirs:
+                            os.chown(os.path.join(root, d), OWN_UID, OWN_GID)
+
+                        for f in files:
+                            os.chown(os.path.join(root, f), OWN_UID, OWN_GID)
+                except OSError:
+                    logging.info('Error chown recursively on %r', path)
 
 def create_github_webhook(org):
     config = {
