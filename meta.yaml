@@ -10,10 +10,6 @@ build:
   script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
   noarch: python
 
-tests:
-  imports:
-    - provisioner
-
 requirements:
   build:
     - git
