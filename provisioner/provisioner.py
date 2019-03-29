@@ -7,9 +7,9 @@ from threading import Thread
 from queue import Queue
 from wsgiref.simple_server import make_server
 
+import escapism
 from github import Github, GithubException
 from kubernetes import client, config
-
 from pyramid.config import Configurator
 from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
@@ -36,7 +36,7 @@ else:
 user_queue = Queue()
 
 def create_pv(username, namespace, path, storage_size):
-    safe_chars = set(string.ascii_lowercase + strings.digits)
+    safe_chars = set(string.ascii_lowercase + string.digits)
 
     # Need to format the username that same way jupyterhub does.
     username = escapism.escape(username, safe=safe_chars, escape_char='-').lower()
