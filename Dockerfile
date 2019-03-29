@@ -4,7 +4,7 @@ WORKDIR /build
 
 COPY . .
 
-RUN conda install -c conda-forge -y conda-build && \
+RUN conda install -c conda-forge -y conda-build conda-verify && \
       conda build -c conda-forge .
 
 FROM continuumio/miniconda3:4.5.12
