@@ -153,18 +153,33 @@ class PayloadView(object):
         self.request = request
         self.payload = self.request.json
 
-    @view_config(header='X-Github-Event:member_added')
+    @view_config(header='X-Github-Event:organization')
     def payload_member_added(self):
-        login = self.payload['sender']['login']
-        logging.info('Member %s added', login)
+        try:
+            action = self.payload['action']
+            
+            login = self.payload['membership']['user']['login']
+        except KeyError as e:
+            logger.info('Malformed Github payload missing key %s', e)
+        else:
+            if action == 'member_invited':
+                logging.info('Member %r has been invited to the organization', login)
+            elif action == 'member_added':
+                logging.info('Member %r has been added to the organization', login)
 
-        user_queue.put(login)
+                # Start provisioning the PersistentVolume once added.
+                user_queue.put(login)
+            elif action == 'member_removed':
+                logging.info('Member %r has been removed from the organization', login)
+            else:
+                logging.info('Unknown action %r on organization webhook', login)
 
         return {'status': 200}
 
     @view_config(header='X-Github-Event:ping')
     def payload_ping(self):
         logging.info('Pinged with id %s', self.payload['hook']['id'])
+
         return {'status': 200}
 
 def main():
