@@ -21,7 +21,7 @@ EXTERNAL_HOST = os.environ['EXTERNAL_HOST']
 CALLBACK_PATH = os.environ['CALLBACK_PATH']
 
 NAMESPACE = os.environ['NAMESPACE']
-PATH = os.environ['PATH']
+BASE_PATH = os.environ['BASE_PATH']
 STORAGE_SIZE = os.environ['STORAGE_SIZE']
 
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
@@ -74,7 +74,7 @@ def handle_k8s_provisions():
 
         logging.info('Processing request for user %r', login)
 
-        pv = create_pv(login, NAMESPACE, PATH, STORAGE_SIZE)
+        pv = create_pv(login, NAMESPACE, BASE_PATH, STORAGE_SIZE)
 
         try:
             core.create_persistent_volume(body=pv)

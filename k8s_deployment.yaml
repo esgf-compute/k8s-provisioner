@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: nimbus-k8s-provisioner
@@ -19,6 +19,7 @@ spec:
       containers:
       - name: nimbus-k8s-provisioner
         image: jasonb87/nimbus-provisioner:latest
+        imagePullPolicy: IfNotPresent
         envFrom:
         - configMapRef:
             name: nimbus-k8s-provisioner-config
@@ -31,8 +32,9 @@ spec:
           name: jupyterhub-users
       volumes:
       - name: jupyterhub-users
-        persistentVolumeClaim:
-          claimName: jupyterhub-users
+        hostPath:
+          path: /p/cscratch/nimbus
+          type: DirectoryOrCreate
       - name: nimbus-k8s-provisioner-secret
         secret:
           secretName: nimbus-k8s-provisioner-secret
@@ -45,13 +47,13 @@ kind: ConfigMap
 metadata:
   name: nimbus-k8s-provisioner-config
 data:
-  git-organization: ""
-  external-host: ""
-  callback-path: ""
-  namespace: ""
-  path: ""
-  storage-size: ""
-  incluster: "true"
+  GIT_ORGANIZATION: ""
+  EXTERNAL_HOST: ""
+  CALLBACK_PATH: ""
+  NAMESPACE: ""
+  BASE_PATH: ""
+  STORAGE_SIZE: ""
+  INCLUSTER: "true"
 ---
 apiVersion: v1
 kind: Secret
@@ -59,8 +61,8 @@ metadata:
   name: nimbus-k8s-provisioner-secret
 type: Opaque
 data:
-  git-username: ""
-  git-password: "" 
+  GIT_USERNAME: ""
+  GIT_PASSWORD: ""
 ---
 kind: Service
 apiVersion: v1
@@ -110,4 +112,4 @@ subjects:
 roleRef:
   kind: Role
   name: nimbus-provisioner
-apiGroup: rbac.authorization.k8s.io
+  apiGroup: rbac.authorization.k8s.io
