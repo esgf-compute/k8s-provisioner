@@ -26,6 +26,7 @@ requirements:
     - python-kubernetes
     - pygithub
     - pyramid
+    - escapism
 
 about:
   home: https://github.com/esgf-nimbus/k8s-provisioner

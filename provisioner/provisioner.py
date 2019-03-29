@@ -1,7 +1,8 @@
 from __future__ import print_function
 
-import os
 import logging
+import os
+import string
 from threading import Thread
 from queue import Queue
 from wsgiref.simple_server import make_server
@@ -35,6 +36,11 @@ else:
 user_queue = Queue()
 
 def create_pv(username, namespace, path, storage_size):
+    safe_chars = set(string.ascii_lowercase + strings.digits)
+
+    # Need to format the username that same way jupyterhub does.
+    username = escapism.escape(username, safe=safe_chars, escape_char='-').lower()
+
     name = 'gpfs-{!s}'.format(username)
 
     claim_name = 'claim-{!s}'.format(username)
