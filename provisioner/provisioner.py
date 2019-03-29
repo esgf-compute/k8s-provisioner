@@ -102,7 +102,7 @@ def create_github_webhook(org):
     logging.info('Attempting to register webhook on %s with payload %s', org.id, config)
 
     try:
-        org.create_hook('web', config, 'member', active=True)
+        org.create_hook('web', config, 'organization', active=True)
     except GithubException as e:
         logging.info('Failed to register webhook status: %s reason: %s', e.status, e.data)
 
