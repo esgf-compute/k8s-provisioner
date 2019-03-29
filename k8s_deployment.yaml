@@ -14,6 +14,7 @@ spec:
       labels:
         app: nimbus-k8s-provisioner
     spec:
+      serviceAccount: nimbus-provisioner
       nodeSelector:
         tier: backend
       containers:
@@ -31,8 +32,8 @@ spec:
           name: jupyterhub-users
       volumes:
       - name: jupyterhub-users
-        persistentVolumeClaim:
-          claimName: jupyterhub-users
+        hostPath:
+          path: /p/cscratch/nimbus
       - name: nimbus-k8s-provisioner-secret
         secret:
           secretName: nimbus-k8s-provisioner-secret
@@ -60,7 +61,7 @@ metadata:
 type: Opaque
 data:
   git-username: ""
-  git-password: "" 
+  git-password: ""
 ---
 kind: Service
 apiVersion: v1
@@ -92,22 +93,23 @@ metadata:
   name: nimbus-provisioner
 --- 
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: nimbus-provisioner
 rules:
 - apiGroups: [""]
   resources: ["persistentvolumes"]
-  verbs: ["create",]
+  verbs: ["create"]
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: nimbus-provisioner
 subjects:
 - kind: ServiceAccount
   name: nimbus-provisioner
+  #apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: nimbus-provisioner
-apiGroup: rbac.authorization.k8s.io
+  apiGroup: rbac.authorization.k8s.io
