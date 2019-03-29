@@ -13,10 +13,6 @@ from pyramid.config import Configurator
 from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
 
-config.load_kube_config()
-
-user_queue = Queue()
-
 USERNAME = os.environ.get('GIT_USERNAME', None)
 PASSWORD = os.environ['GIT_PASSWORD']
 ORGANIZATION = os.environ['GIT_ORGANIZATION']
@@ -29,6 +25,14 @@ PATH = os.environ['PATH']
 STORAGE_SIZE = os.environ['STORAGE_SIZE']
 
 LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', 'INFO')
+INCLUSTER = bool(os.environ.get('INCLUSTER', False))
+
+if INCLUSTER:
+    config.load_incluster_config()
+else:
+    config.load_kube_config()
+
+user_queue = Queue()
 
 def create_pv(username, namespace, path, storage_size):
     name = 'gpfs-{!s}'.format(username)

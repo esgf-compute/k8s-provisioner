@@ -51,6 +51,7 @@ data:
   namespace: ""
   path: ""
   storage-size: ""
+  incluster: "true"
 ---
 apiVersion: v1
 kind: Secret
