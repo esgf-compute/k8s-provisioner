@@ -104,7 +104,8 @@ def handle_k8s_provisions():
             except OSError as e:
                 logging.info('Error creating directory %r', path)
 
-                pass
+                # Enforce the parent directory permissions
+                os.chmod(path, PERMISSION)
 
             # Change ownership
             try:
@@ -112,19 +113,6 @@ def handle_k8s_provisions():
                 os.chown(path, OWN_UID, OWN_GID)
             except OSError as e:
                 logging.info('Error chown on %r', path)
-
-                pass
-
-            # Change ownershiop recursively
-            try:
-                for root, dirs, files in os.walk(path):
-                    for d in dirs:
-                        os.chown(os.path.join(root, d), OWN_UID, OWN_GID)
-
-                    for f in files:
-                        os.chown(os.path.join(root, f), OWN_UID, OWN_GID)
-            except OSError:
-                logging.info('Error chown recursively on %r', path)
 
                 pass
 
