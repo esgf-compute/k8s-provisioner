@@ -21,6 +21,13 @@ spec:
       - name: nimbus-k8s-provisioner
         image: jasonb87/nimbus-provisioner:latest
         imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 1
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 128Mi
         envFrom:
         - configMapRef:
             name: nimbus-k8s-provisioner-config
