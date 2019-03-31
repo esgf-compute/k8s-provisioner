@@ -103,22 +103,30 @@ def handle_k8s_provisions():
                 os.makedirs(path, PERMISSION, True)
             except OSError as e:
                 logging.info('Error creating directory %r', path)
-            else:
-                try:
-                    # Fix ownership
-                    os.chown(path, OWN_UID, OWN_GID)
-                except OSError as e:
-                    logging.info('Error chown on %r', path)
 
-                try:
-                    for root, dirs, files in os.walk(path):
-                        for d in dirs:
-                            os.chown(os.path.join(root, d), OWN_UID, OWN_GID)
+                pass
 
-                        for f in files:
-                            os.chown(os.path.join(root, f), OWN_UID, OWN_GID)
-                except OSError:
-                    logging.info('Error chown recursively on %r', path)
+            # Change ownership
+            try:
+                # Fix ownership
+                os.chown(path, OWN_UID, OWN_GID)
+            except OSError as e:
+                logging.info('Error chown on %r', path)
+
+                pass
+
+            # Change ownershiop recursively
+            try:
+                for root, dirs, files in os.walk(path):
+                    for d in dirs:
+                        os.chown(os.path.join(root, d), OWN_UID, OWN_GID)
+
+                    for f in files:
+                        os.chown(os.path.join(root, f), OWN_UID, OWN_GID)
+            except OSError:
+                logging.info('Error chown recursively on %r', path)
+
+                pass
 
 def create_github_webhook(org):
     config = {
