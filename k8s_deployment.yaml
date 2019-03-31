@@ -86,6 +86,11 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: nimbus-k8s-provisioner
+  annotations:
+    ingress.kubernetes.io/force-hsts: "true"
+    ingress.kubernetes.io/hsts-include-subdomains: "true"
+    ingress.kubernetes.io/hsts-max-age: "31536000"
+    ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
   - http:
