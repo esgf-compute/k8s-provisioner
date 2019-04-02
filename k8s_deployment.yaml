@@ -98,7 +98,7 @@ spec:
       - backend:
           serviceName: nimbus-k8s-provisioner
           servicePort: 8000
-        path: /github/webhook
+        path: /github/webhook/provisioner
 ---
 kind: ServiceAccount
 apiVersion: v1
